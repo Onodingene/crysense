@@ -1,0 +1,70 @@
+# ──────────────────────────────────────────────────────────────────
+#  CrySense — Local Development Stack
+# ──────────────────────────────────────────────────────────────────
+#
+# Brings up:
+#   - model-api    (FastAPI + TensorFlow)  → port 8000
+#   - backend      (NestJS)                → port 3000
+#   - frontend     (React Vite PWA)        → port 5173
+#
+# Usage:
+#   docker compose up
+#
+# The model file (crysense_best.h5) and normalisation.npz must be in
+# ./model-api/models/ before starting. You can copy them from your
+# Google Drive after training.
+# ──────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── 1. Model microservice ───────────────────────────────────────
+  model-api:
+    build:
+      context: ./model-api
+      dockerfile: Dockerfile
+    container_name: crysense-model
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./model-api/models:/app/models:ro
+    environment:
+      MODEL_PATH: /app/models/crysense_best.h5
+      NORM_PATH:  /app/models/normalisation.npz
+      ALLOWED_HOSTS: "*"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  # ── 2. NestJS backend ──────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: crysense-backend
+    ports:
+      - "3000:3000"
+    environment:
+      MODEL_API_URL: http://model-api:8000
+      PORT: 3000
+      NODE_ENV: development
+    depends_on:
+      model-api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── 3. React PWA frontend ──────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: crysense-pwa
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_BASE: http://localhost:3000
+    depends_on:
+      - backend

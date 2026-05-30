@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+venv/
+env/
+
+# Build outputs
+dist/
+build/
+
+# Environment files (contains VAPID keys — keep secret)
+.env
+.env.local
+.env.production
+*.env
+
+# Databases
+*.db
+*.sqlite
+crysense.db
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+*.log

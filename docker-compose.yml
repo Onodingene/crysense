@@ -1,0 +1,29 @@
+services:
+  model-api:
+    build: ./model-api
+    container_name: crysense-model
+    ports:
+      - "8000:8000"
+
+  backend:
+    build: ./backend
+    container_name: crysense-backend
+    ports:
+      - "3000:3000"
+    environment:
+      MODEL_API_URL: http://model-api:8000
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      VAPID_SUBJECT: mailto:you@example.com
+    depends_on:
+      - model-api
+
+  frontend:
+    build: ./frontend
+    container_name: crysense-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_BASE: http://localhost:3000
+    depends_on:
+      - backend
