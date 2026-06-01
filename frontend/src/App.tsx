@@ -7,7 +7,7 @@ import { api } from './lib/api';
 import { pushManager } from './lib/push';
 import { BottomNav, type Tab } from './components/BottomNav';
 import { DetectScreen } from './screen/DetectScreen';
-import { HistoryScreen } from './screen/HistoryScreen';
+// import { HistoryScreen } from './screen/HistoryScreen';
 import { AlertsScreen } from './screen/AlertsScreen';
 import { SettingsScreen } from './screen/SettingsScreen';
 
@@ -40,7 +40,6 @@ export default function App() {
       position: 'relative',
     }}>
       {tab === 'detect'   && <DetectScreen onDetected={refreshUnread} />}
-      {tab === 'history'  && <HistoryScreen />}
       {tab === 'alerts'   && <AlertsScreen onAlertsRead={refreshUnread} />}
       {tab === 'settings' && <SettingsScreen />}
 
