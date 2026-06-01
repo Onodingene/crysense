@@ -1,4 +1,4 @@
-export interface DetectionResult {
+export interface HistoryEntry {
   id: string;
   primaryCause: string;
   primaryConfidence: number;
@@ -21,11 +21,18 @@ export interface Alert {
   message: string;
   read: boolean;
   createdAt: string;
+  relatedId?: string;
 }
 
-export interface Settings {
+export interface AppSettings {
   pushNotifications: boolean;
   temperatureAlerts: boolean;
   tempMin: number;
   tempMax: number;
+}
+
+export interface TemperatureReading {
+  value: number;
+  unit: 'C' | 'F';
+  timestamp: string;
 }
