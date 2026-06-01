@@ -1,6 +1,5 @@
 import { api } from './api';
  
- 
 // Convert a base64 VAPID key to the Uint8Array the browser needs
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -42,7 +41,7 @@ export const pushManager = {
  
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource,
+      applicationServerKey: urlBase64ToUint8Array(publicKey) as BufferSource,
     });
  
     await api.subscribePush(subscription);
