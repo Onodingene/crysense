@@ -41,7 +41,7 @@ export class ModelClientService {
         this.http.post<ModelPrediction>(`${this.modelUrl}/predict`, form, {
           headers: form.getHeaders(),
           maxBodyLength: 10 * 1024 * 1024,
-          timeout: 8000,
+          timeout: 90000,
         }),
       );
       const elapsed = Date.now() - start;

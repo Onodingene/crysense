@@ -1,12 +1,32 @@
 import { useState, useRef, useEffect } from 'react';
-import { Mic, MicOff, Loader2,AlertCircle, Thermometer } from 'lucide-react';
+import { Mic, MicOff, Loader2, AlertCircle, Thermometer, CheckCircle } from 'lucide-react';
 import { theme } from '../lib/theme';
 import { api } from '../lib/api';
-// import { CLASS_LABEL, CLASS_EMOJI, CLASS_COLOUR } from '../components/shared';
 import { TopBar } from '../components/TopBar';
 
 const RECORDING_DURATION_MS = 4000;
 type Stage = 'idle' | 'requesting' | 'recording' | 'processing' | 'result' | 'error';
+
+const CLASS_LABEL: Record<string, string> = {
+  hunger: 'Hunger',
+  pain: 'Pain',
+  discomfort: 'Discomfort',
+  sleepiness: 'Sleepiness',
+};
+
+const CLASS_EMOJI: Record<string, string> = {
+  hunger: '🍼',
+  pain: '🩹',
+  discomfort: '😣',
+  sleepiness: '😴',
+};
+
+const CLASS_COLOUR: Record<string, string> = {
+  hunger: '#F59E0B',
+  pain: '#EF4444',
+  discomfort: '#8B5CF6',
+  sleepiness: '#3B82F6',
+};
 
 interface DetectionResult {
   id: string;
@@ -63,9 +83,10 @@ export function DetectScreen({ onDetected }: { onDetected: () => void }) {
       recorder.onstop = handleStop;
       recorder.start();
       setStage('recording');
-      // const startTime = Date.now();
+      // eslint-disable-next-line react-hooks/purity
+      const startTime = Date.now();
       progRef.current = window.setInterval(() => {
-        // setProgress(Math.min(100, ((Date.now() - startTime) / RECORDING_DURATION_MS) * 100));
+        setProgress(Math.min(100, ((Date.now() - startTime) / RECORDING_DURATION_MS) * 100));
       }, 50);
       timerRef.current = window.setTimeout(stop, RECORDING_DURATION_MS);
     } catch (err) {
@@ -98,10 +119,10 @@ export function DetectScreen({ onDetected }: { onDetected: () => void }) {
       const fd = new FormData();
       fd.append('audio', blob, 'cry.webm');
       fd.append('timeOfDay', getTimeOfDay());
-      // const data = (await api.detect(fd)) as DetectionResult;
-      // setResult(data);
-      // onDetected();
-      // setStage('result');
+      const data = (await api.detect(fd)) as DetectionResult;
+      setResult(data);
+      onDetected();
+      setStage('result');
     } catch (err) {
       setStage('error');
       setError((err as Error).message || 'Could not process the recording.');
@@ -131,7 +152,6 @@ export function DetectScreen({ onDetected }: { onDetected: () => void }) {
       <TopBar title="CrySense" subtitle="Tap to detect what your baby needs" />
 
       <div style={{ padding: '28px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-
         <div style={{
           width: '100%', maxWidth: 420, background: theme.colors.surface,
           border: `1px solid ${theme.colors.border}`, borderRadius: theme.radius.lg,
@@ -231,8 +251,8 @@ export function DetectScreen({ onDetected }: { onDetected: () => void }) {
 }
 
 function ResultCard({ result, onReset }: { result: DetectionResult; onReset: () => void }) {
-  // const cause = result.contextAdjustedCause;
-  // const colour = CLASS_COLOUR[cause];
+  const cause = result.contextAdjustedCause;
+  const colour = CLASS_COLOUR[cause] || theme.colors.primary;
   const confPct = Math.round(result.primaryConfidence * 100);
 
   const sortedProbs: [string, number][] = Object.entries(result.allProbabilities)
@@ -244,11 +264,11 @@ function ResultCard({ result, onReset }: { result: DetectionResult; onReset: () 
       border: `1px solid ${theme.colors.border}`, borderRadius: theme.radius.lg, overflow: 'hidden',
     }}>
       <div style={{
-        // background: `${colour}10`, padding: '24px 24px 20px',
+        background: `${colour}10`, padding: '24px 24px 20px',
         textAlign: 'center', borderBottom: `1px solid ${theme.colors.borderLight}`,
       }}>
-        {/* <div style={{ fontSize: 48, marginBottom: 6 }}>{CLASS_EMOJI[cause]}</div> */}
-        {/* <div style={{ fontSize: 20, fontWeight: 700, color: colour }}>{CLASS_LABEL[cause]}</div> */}
+        <div style={{ fontSize: 48, marginBottom: 6 }}>{CLASS_EMOJI[cause]}</div>
+        <div style={{ fontSize: 20, fontWeight: 700, color: colour }}>{CLASS_LABEL[cause]}</div>
         <div style={{ fontSize: 13, color: theme.colors.textMuted, marginTop: 2 }}>
           {confPct}% confidence
         </div>
@@ -265,7 +285,7 @@ function ResultCard({ result, onReset }: { result: DetectionResult; onReset: () 
               display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 0',
               borderTop: i === 0 ? 'none' : `1px solid ${theme.colors.borderLight}`,
             }}>
-              {/* <CheckCircle size={16} color={colour} style={{ marginTop: 2, flexShrink: 0 }} /> */}
+              <CheckCircle size={16} color={colour} style={{ marginTop: 2, flexShrink: 0 }} />
               <span style={{ fontSize: 13, lineHeight: 1.4, color: theme.colors.text }}>{item}</span>
             </div>
           ))}
@@ -275,13 +295,14 @@ function ResultCard({ result, onReset }: { result: DetectionResult; onReset: () 
           {sortedProbs.map(([cls, prob]) => (
             <div key={cls} style={{ marginBottom: 8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
-                {/* <span style={{ color: theme.colors.text, fontWeight: 500 }}>{CLASS_LABEL[cls]}</span> */}
+                <span style={{ color: theme.colors.text, fontWeight: 500 }}>{CLASS_LABEL[cls] || cls}</span>
                 <span style={{ color: theme.colors.textMuted }}>{Math.round(prob * 100)}%</span>
               </div>
               <div style={{ height: 4, background: theme.colors.surfaceAlt, borderRadius: 2 }}>
                 <div style={{
                   height: '100%', width: `${prob * 100}%`,
-                  // background: CLASS_COLOUR[cls], borderRadius: 2, transition: 'width 0.4s',
+                  background: CLASS_COLOUR[cls] || theme.colors.primary,
+                  borderRadius: 2, transition: 'width 0.4s',
                 }} />
               </div>
             </div>

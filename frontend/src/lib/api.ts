@@ -1,6 +1,7 @@
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
  
 export const api = {
+
   // ── History ────────────────────────────────────────────────────
   async getHistory() {
     const res = await fetch(`${API_BASE}/api/history`);
@@ -11,6 +12,19 @@ export const api = {
     await fetch(`${API_BASE}/api/history`, { method: 'DELETE' });
   },
  
+  // ── Detection ──────────────────────────────────────────────────
+  async detect(fd: FormData) {
+    const res = await fetch(`${API_BASE}/api/detect`, {
+      method: 'POST',
+      body: fd,
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(`Detection failed (${res.status}): ${text || res.statusText}`);
+    }
+    return res.json();
+  },
+  
   // ── Alerts ─────────────────────────────────────────────────────
   async getAlerts() {
     const res = await fetch(`${API_BASE}/api/alerts`);

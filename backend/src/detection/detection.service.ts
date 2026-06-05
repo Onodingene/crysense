@@ -68,6 +68,8 @@ export class DetectionService {
       );
     }
     const prediction = await this.modelClient.predict(audioBuffer, mimeType);
+    console.log('🔍 MODEL RESPONSE:', JSON.stringify(prediction, null, 2));
+    console.log('🔍 typeof prediction:', typeof prediction);
     const fusion = this.fusion.apply(prediction, ctx);
     const finalCause = fusion.finalCause;
     const reco = RECOMMENDATIONS[finalCause];
